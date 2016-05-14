@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.bluelinelabs.logansquare.LoganSquare;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
@@ -15,10 +14,12 @@ import com.peak.salut.Salut;
 import com.peak.salut.SalutDataReceiver;
 import com.peak.salut.SalutDevice;
 import com.peak.salut.SalutServiceData;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements SalutDataCallback , View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements SalutDataCallback , View.OnClickListener, JogoDaVelhaView.JogoDaVelhaListener{
 
 
     public static final String TAG = "Jogo da Velha";
@@ -32,6 +33,9 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
     private boolean isHost = false;
     private SalutDevice device;
 
+    JogoDaVelhaView jogo;
+    JsonAdapter<Jogada> jsonAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,11 +43,11 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
 
         hostingBtn = (Button) findViewById(R.id.hosting_button);
         discoverBtn = (Button) findViewById(R.id.discover_services);
-        send_msg = (Button) findViewById(R.id.send_msg);
+        //send_msg = (Button) findViewById(R.id.send_msg);
 
         hostingBtn.setOnClickListener(this);
         discoverBtn.setOnClickListener(this);
-        send_msg.setOnClickListener(this);
+        //send_msg.setOnClickListener(this);
         dataReceiver = new SalutDataReceiver(this, this);
 
 
@@ -59,6 +63,24 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
                 Log.e(TAG, "Sorry, but this device does not support WiFi Direct.");
             }
         });
+        Moshi moshi = new Moshi.Builder().build();
+        jsonAdapter = moshi.adapter(Jogada.class);
+
+
+
+        /*(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                jogo.reiniciarJogo();
+            }
+        });*/
+
+        jogo = (JogoDaVelhaView) findViewById(R.id.jogoDaVelha);
+        jogo.setListener(this);
+
+        jogo.setVisibility(View.INVISIBLE);
+
+
 
     }
 
@@ -72,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
                     Toast.makeText(getApplicationContext(), "Device: " + salutDevice.instanceName + " connected.", Toast.LENGTH_SHORT).show();
                     device = salutDevice;
                     Log.i(TAG,"Registoru com: "+device.instanceName);
+                    jogo.setVisibility(View.VISIBLE);
+                    jogo.setAnable(true);
                 }
             });
             isHost = true;
@@ -127,9 +151,19 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         //Data Is Received
         Log.d(TAG, "Received network data.");
         Log.i(TAG,"Receive: "+data.toString());
+        try {
+            Jogada j= jsonAdapter.fromJson(data.toString());
+
+            jogo.setJogada(j.linha,j.coluna);
+
+            jogo.setAnable(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
        /* try
         {
-            Menssagem newMenssagem = LoganSquare.parse(String.valueOf((Menssagem)data), Menssagem.class);
+            Jogada newMenssagem = LoganSquare.parse(String.valueOf((Jogada)data), Jogada.class);
             Log.d(TAG, newMenssagem.description);  //See you on the other side!
             Toast.makeText(this, newMenssagem.description,Toast.LENGTH_SHORT).show();
             //Do other stuff with data.
@@ -159,12 +193,12 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
             discoverServices();
         }
 
-        if(v.getId() == R.id.send_msg){
+        /*if(v.getId() == R.id.send_msg){
             if(isHost){
                 sendMensage(device,false);
             }else
             sendMensage(null,true);
-        }
+        }*/
     }
 
     private void register(final SalutDevice possibleHost){
@@ -173,6 +207,9 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
             @Override
             public void call() {
                 Log.d(TAG, "We're now registered.");
+                jogo.setVisibility(View.VISIBLE);
+                jogo.setAnable(false);
+
             }
         }, new SalutCallback() {
             @Override
@@ -183,20 +220,20 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
 
     }
 
-    private void sendMensage(SalutDevice deviceToSendTo,boolean toHost) {
+    private void sendMensage(SalutDevice deviceToSendTo,Jogada jogada, boolean toHost) {
 
-        Menssagem myMenssagem = new Menssagem();
-        myMenssagem.description = "See you on the other side! PEGOU!!!";
+        String json = jsonAdapter.toJson(jogada);
+        Log.i(TAG,"Json: "+json);
 
         if (toHost) {
-            network.sendToHost("{\"Teste\":\"name\"}", new SalutCallback() {
+            network.sendToHost(json, new SalutCallback() {
                 @Override
                 public void call() {
                     Log.e(TAG, "Oh no! The data failed to send.");
                 }
             });
         } else {
-            network.sendToDevice(deviceToSendTo, "{\"Teste\":\"name\"}", new SalutCallback() {
+            network.sendToDevice(deviceToSendTo,json, new SalutCallback() {
                 @Override
                 public void call() {
                     Log.e(TAG, "Oh no! The data failed to send.");
@@ -217,4 +254,38 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         }
 
 
+    @Override
+    public void fimDeJogo(int vencedor) {
+        String mensagem;
+        switch (vencedor) {
+            case JogoDaVelhaView.XIS:
+                mensagem = "X venceu!";
+                break;
+            case JogoDaVelhaView.BOLA:
+                mensagem = "O venceu!";
+                break;
+            default:
+                mensagem = "Empatou!";
+        }
+        Toast.makeText(this, mensagem, Toast.LENGTH_LONG).show();
+        jogo.setAnable(false);
+    }
+
+    @Override
+    public void LocalJogada(int linha, int coluna) {
+        Log.i(TAG,"Linha: "+linha+",Coluna: "+coluna);
+        Jogada j = new Jogada();
+        j.linha = linha;
+        j.coluna = coluna;
+
+        if(isHost){
+            j.jogador = JogoDaVelhaView.XIS;
+            sendMensage(device,j,false);
+        }else {
+            j.jogador = JogoDaVelhaView.BOLA;
+            sendMensage(null,j, true);
+        }
+
+        jogo.setAnable(false);
+    }
 }
