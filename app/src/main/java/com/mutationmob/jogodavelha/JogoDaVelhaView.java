@@ -190,9 +190,16 @@ public class JogoDaVelhaView extends View {
     }
 
     public void setJogada(int linha,int coluna) {
+        int vencedor = gameOver();
         mTabuleiro[linha][coluna] = mVez;
         mVez = (mVez == XIS) ? BOLA : XIS;
         invalidate();
+        vencedor = gameOver();
+        if (vencedor != VAZIO) {
+            if (mListener != null) {
+                mListener.fimDeJogo(vencedor);
+            }
+        }
     }
 
     public void setAnable(boolean isAnable){

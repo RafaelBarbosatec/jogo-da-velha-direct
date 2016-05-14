@@ -150,9 +150,9 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
     public void onDataReceived(Object data) {
         //Data Is Received
         Log.d(TAG, "Received network data.");
-        Log.i(TAG,"Receive: "+data.toString());
+        Log.i(TAG,"Receive: "+((String) data).substring(1,data.toString().length()-1).replace("\\",""));
         try {
-            Jogada j= jsonAdapter.fromJson(data.toString());
+            Jogada j= jsonAdapter.fromJson(((String) data).substring(1,data.toString().length()-1).replace("\\",""));
 
             jogo.setJogada(j.linha,j.coluna);
 
