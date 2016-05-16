@@ -1,4 +1,4 @@
-package com.mutationmob.jogodavelha;
+package com.mutationmob.jogodavelha.model;
 
 
 /**
@@ -10,6 +10,7 @@ package com.mutationmob.jogodavelha;
     public int jogador;
     public int linha;
     public int coluna;
+    public boolean reiniciar;
 
 
 

@@ -1,12 +1,17 @@
-package com.mutationmob.jogodavelha;
+package com.mutationmob.jogodavelha.activitys;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mutationmob.jogodavelha.model.Jogada;
+import com.mutationmob.jogodavelha.views.JogoDaVelhaView;
+import com.mutationmob.jogodavelha.R;
 import com.peak.salut.Callbacks.SalutCallback;
 import com.peak.salut.Callbacks.SalutDataCallback;
 import com.peak.salut.Callbacks.SalutDeviceCallback;
@@ -19,37 +24,42 @@ import com.squareup.moshi.Moshi;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements SalutDataCallback , View.OnClickListener, JogoDaVelhaView.JogoDaVelhaListener{
+public class MainActivity extends AppCompatActivity implements SalutDataCallback , View.OnClickListener, JogoDaVelhaView.JogoDaVelhaListener {
 
 
     public static final String TAG = "Jogo da Velha";
     public SalutDataReceiver dataReceiver;
     public SalutServiceData serviceData;
     public Salut network;
-    public Button hostingBtn;
-    public Button discoverBtn;
-    public Button send_msg;
-    SalutDataCallback callback;
+    public Button bt_reiniciar;
+    private SalutDataCallback callback;
     private boolean isHost = false;
     private SalutDevice device;
+    private boolean is_reset = false;
 
     JogoDaVelhaView jogo;
     JsonAdapter<Jogada> jsonAdapter;
+    TextView tv_progress,tv_information,placar_xis,placar_bola;
+    int vitorias_xis = 0,vitorias_bola = 0;
+    private int jogador_inicia = JogoDaVelhaView.XIS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
+        setContentView(R.layout.game_loading);
+        tv_progress =(TextView)findViewById(R.id.text_prgress);
 
-        hostingBtn = (Button) findViewById(R.id.hosting_button);
-        discoverBtn = (Button) findViewById(R.id.discover_services);
+      //  hostingBtn = (Button) findViewById(R.id.hosting_button);
+        //discoverBtn = (Button) findViewById(R.id.discover_services);
         //send_msg = (Button) findViewById(R.id.send_msg);
 
-        hostingBtn.setOnClickListener(this);
-        discoverBtn.setOnClickListener(this);
+       // hostingBtn.setOnClickListener(this);
+       // discoverBtn.setOnClickListener(this);
         //send_msg.setOnClickListener(this);
         dataReceiver = new SalutDataReceiver(this, this);
-
+        Moshi moshi = new Moshi.Builder().build();
+        jsonAdapter = moshi.adapter(Jogada.class);
 
         /*Populate the details for our awesome service. */
         serviceData = new SalutServiceData("JogoDaVelha", 60606,
@@ -63,22 +73,63 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
                 Log.e(TAG, "Sorry, but this device does not support WiFi Direct.");
             }
         });
-        Moshi moshi = new Moshi.Builder().build();
-        jsonAdapter = moshi.adapter(Jogada.class);
 
 
 
-        /*(R.id.button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                jogo.reiniciarJogo();
+        Intent intent = getIntent();
+        if(intent!=null){
+            Bundle bundle = intent.getExtras();
+            if(bundle != null) {
+                isHost=bundle.getBoolean("host");
             }
-        });*/
+        }
 
+        if (isHost){
+            setupNetwork();
+        }else{
+            discoverServices();
+        }
+
+        /**/
+
+
+    }
+
+    private void initGame(){
+        setContentView(R.layout.activity_main);
         jogo = (JogoDaVelhaView) findViewById(R.id.jogoDaVelha);
         jogo.setListener(this);
+        bt_reiniciar = (Button)findViewById(R.id.bt_reiniciar);
+        tv_information = (TextView)findViewById(R.id.tv_information);
+        placar_xis = (TextView)findViewById(R.id.placar_xis);
+        placar_bola = (TextView)findViewById(R.id.placar_bola);
+        bt_reiniciar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(jogador_inicia == JogoDaVelhaView.XIS){
+                    jogador_inicia = JogoDaVelhaView.BOLA;
+                    tv_information.setText("Espere a vez de seu oponente");
+                    jogo.setAnable(false);
+                }else{
+                    jogador_inicia = JogoDaVelhaView.XIS;
+                    tv_information.setText("Sua Vez!");
+                    jogo.setAnable(true);
+                }
+                is_reset = true;
+                jogo.reiniciarJogo(jogador_inicia);
+                Jogada j = new Jogada();
+                j.reiniciar = true;
+                sendMensage(device,j,false);
+                bt_reiniciar.setVisibility(View.GONE);
+            }
+        });
 
-        jogo.setVisibility(View.INVISIBLE);
+        if (isHost) {
+            tv_information.setText("Sua Vez!");
+        }else{
+            tv_information.setText("Espere a vez de seu oponente");
+        }
+
 
 
 
@@ -88,54 +139,75 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
     {
         if(!network.isRunningAsHost)
         {
+            tv_progress.setText("Criando game...");
             network.startNetworkService(new SalutDeviceCallback() {
                 @Override
                 public void call(SalutDevice salutDevice) {
-                    Toast.makeText(getApplicationContext(), "Device: " + salutDevice.instanceName + " connected.", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), "Device: " + salutDevice.instanceName + " connected.", Toast.LENGTH_SHORT).show();
                     device = salutDevice;
-                    Log.i(TAG,"Registoru com: "+device.instanceName);
-                    jogo.setVisibility(View.VISIBLE);
+                    Log.i(TAG, "Registrou com: " + device.instanceName);
+                    initGame();
                     jogo.setAnable(true);
                 }
+            }, new SalutCallback() {
+                @Override
+                public void call() {
+                    tv_progress.setText("Esperando segundo jogador...");
+                }
+            }, new SalutCallback() {
+                @Override
+                public void call() {
+                    Toast.makeText(MainActivity.this,"Erro ao criar Game",Toast.LENGTH_SHORT).show();
+                    MainActivity.this.finish();
+                }
             });
+
             isHost = true;
 
-            hostingBtn.setText("Stop Service");
+            /*hostingBtn.setText("Stop Service");
             discoverBtn.setAlpha(0.5f);
-            discoverBtn.setClickable(false);
+            discoverBtn.setClickable(false);*/
         }
-        else
+        /*else
         {
             network.stopNetworkService(false);
             hostingBtn.setText("Start Service");
             discoverBtn.setAlpha(1f);
             discoverBtn.setClickable(true);
             isHost = false;
-        }
+        }*/
     }
 
     private void discoverServices()
     {
         if(!network.isRunningAsHost && !network.isDiscovering)
         {
-            network.discoverNetworkServices(new SalutCallback() {
+            tv_progress.setText("Procurando game...");
+            network.discoverWithTimeout(new SalutCallback() {
                 @Override
                 public void call() {
                     Toast.makeText(getApplicationContext(), "Device: " + network.foundDevices.get(0).instanceName + " found.", Toast.LENGTH_SHORT).show();
                     register(network.foundDevices.get(0));
+                    Log.i(MainActivity.TAG,"Name servidor: "+network.foundDevices.get(0).serviceName);
                 }
-            }, true);
-            discoverBtn.setText("Stop Discovery");
+            }, new SalutCallback() {
+                @Override
+                public void call() {
+                    Toast.makeText(MainActivity.this,"Não foi possivel encontrar game, Tente novamente",Toast.LENGTH_SHORT).show();
+                    MainActivity.this.finish();
+                }
+            }, 10000);
+           /* discoverBtn.setText("Stop Discovery");
             hostingBtn.setAlpha(0.5f);
-            hostingBtn.setClickable(false);
+            hostingBtn.setClickable(false);*/
         }
-        else
+        /*else
         {
             network.stopServiceDiscovery(true);
             discoverBtn.setText("Discover Services");
             hostingBtn.setAlpha(1f);
             hostingBtn.setClickable(false);
-        }
+        }*/
     }
 
    /* @Override
@@ -153,13 +225,34 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         Log.i(TAG,"Receive: "+((String) data).substring(1,data.toString().length()-1).replace("\\",""));
         try {
             Jogada j= jsonAdapter.fromJson(((String) data).substring(1,data.toString().length()-1).replace("\\",""));
+            Log.d(TAG, "Object: "+j.coluna);
 
-            jogo.setJogada(j.linha,j.coluna);
+            if(j.reiniciar){
 
-            jogo.setAnable(true);
+                if(jogador_inicia == JogoDaVelhaView.XIS){
+                    jogador_inicia = JogoDaVelhaView.BOLA;
+                    tv_information.setText("Sua Vez!");
+                    jogo.setAnable(true);
+                }else{
+                    jogador_inicia = JogoDaVelhaView.XIS;
+                    tv_information.setText("Espere a vez de seu oponente");
+                    jogo.setAnable(false);
+                }
+                jogo.reiniciarJogo(jogador_inicia);
+
+            }else {
+                tv_information.setText("Sua Vez!");
+                jogo.setJogada(j.linha, j.coluna);
+                jogo.setAnable(true);
+
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+
 
        /* try
         {
@@ -184,14 +277,14 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
             return;
         }
 
-        if(v.getId() == R.id.hosting_button)
+        /*if(v.getId() == R.id.hosting_button)
         {
             setupNetwork();
         }
         else if(v.getId() == R.id.discover_services)
         {
             discoverServices();
-        }
+        }*/
 
         /*if(v.getId() == R.id.send_msg){
             if(isHost){
@@ -202,11 +295,13 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
     }
 
     private void register(final SalutDevice possibleHost){
+        tv_progress.setText("Conectando-se a "+possibleHost.deviceName);
         Log.d(TAG, "Iniciou registro");
         network.registerWithHost(possibleHost, new SalutCallback() {
             @Override
             public void call() {
                 Log.d(TAG, "We're now registered.");
+                initGame();
                 jogo.setVisibility(View.VISIBLE);
                 jogo.setAnable(false);
 
@@ -214,6 +309,8 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         }, new SalutCallback() {
             @Override
             public void call() {
+                Toast.makeText(MainActivity.this,"Falha ao Registrar, ou fecharam o jogo",Toast.LENGTH_SHORT).show();
+                finish();
                 Log.d(TAG, "We failed to register.");
             }
         });
@@ -240,35 +337,57 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
                 }
             });
         }
+        if(!is_reset)
+        tv_information.setText("Espere a vez de seu oponente");
+
+        is_reset = false;
+
     }
 
         @Override
         public void onDestroy () {
-            super.onDestroy();
+
 
             if (isHost)
                 network.stopNetworkService(true);
             else
                 network.unregisterClient(true);
 
+            super.onDestroy();
         }
 
 
     @Override
     public void fimDeJogo(int vencedor) {
-        String mensagem;
+        Log.i(MainActivity.TAG,"Vencedor: "+vencedor);
         switch (vencedor) {
             case JogoDaVelhaView.XIS:
-                mensagem = "X venceu!";
+               if (isHost){
+                   tv_information.setText("Você venceu!");
+               }else{
+                   tv_information.setText("Você perdeu!");
+               }
+                vitorias_xis++;
+                placar_xis.setText(vitorias_xis+"");
                 break;
             case JogoDaVelhaView.BOLA:
-                mensagem = "O venceu!";
+                if (isHost){
+                    tv_information.setText("Você perdeu!");
+                }else{
+                    tv_information.setText("Você venceu!");
+                }
+                vitorias_bola++;
+                placar_bola.setText(vitorias_bola+"");
                 break;
             default:
-                mensagem = "Empatou!";
+                tv_information.setText("EMPATOU");
         }
-        Toast.makeText(this, mensagem, Toast.LENGTH_LONG).show();
         jogo.setAnable(false);
+
+        if (isHost){
+            bt_reiniciar.setVisibility(View.VISIBLE);
+        }
+
     }
 
     @Override
@@ -277,6 +396,7 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         Jogada j = new Jogada();
         j.linha = linha;
         j.coluna = coluna;
+        j.reiniciar = false;
 
         if(isHost){
             j.jogador = JogoDaVelhaView.XIS;

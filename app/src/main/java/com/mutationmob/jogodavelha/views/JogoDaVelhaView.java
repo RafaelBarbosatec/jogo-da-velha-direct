@@ -1,4 +1,4 @@
-package com.mutationmob.jogodavelha;
+package com.mutationmob.jogodavelha.views;
 
 /**
  * Created by rafael on 14/05/16.
@@ -20,6 +20,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.mutationmob.jogodavelha.R;
 
 public class JogoDaVelhaView extends View {
 
@@ -206,8 +208,9 @@ public class JogoDaVelhaView extends View {
         this.isAnable = isAnable;
     }
 
-    public void reiniciarJogo() {
+    public void reiniciarJogo(int vez) {
         mTabuleiro = new int[3][3];
+        mVez = vez;
         invalidate();
     }
 
