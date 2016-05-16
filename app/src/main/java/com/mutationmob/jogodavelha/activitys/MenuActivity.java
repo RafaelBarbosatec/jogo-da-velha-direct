@@ -1,5 +1,6 @@
 package com.mutationmob.jogodavelha.activitys;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.view.View;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -56,7 +58,17 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     private void dialogInstrucoes() {
+        Dialog dilalogHelp = new Dialog(this);
+        //dialog.setCancelable(false);
+        dilalogHelp.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dilalogHelp.setContentView(R.layout.custom_dialog_help);
+        dilalogHelp.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
 
+
+
+
+        dilalogHelp.show();
     }
 
     private void setupView() {
@@ -97,7 +109,7 @@ public class MenuActivity extends AppCompatActivity {
         criar.putExtra("host",true);
         startActivity(criar);
         final SharedPreferences.Editor editor = sp.edit();
-        editor.putBoolean("primeiroAcesso", false);
+        editor.putBoolean("primeiroAcesso", true);
         editor.commit();
     }
 
@@ -111,7 +123,7 @@ public class MenuActivity extends AppCompatActivity {
         criar.putExtra("host",false);
         startActivity(criar);
         final SharedPreferences.Editor editor = sp.edit();
-        editor.putBoolean("primeiroAcesso", false);
+        editor.putBoolean("primeiroAcesso", true);
         editor.commit();
     }
 }

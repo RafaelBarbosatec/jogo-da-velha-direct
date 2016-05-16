@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
             public void onClick(View v) {
                 if(jogador_inicia == JogoDaVelhaView.XIS){
                     jogador_inicia = JogoDaVelhaView.BOLA;
-                    tv_information.setText("Espere a vez de seu oponente");
+                    tv_information.setText(R.string.oponente_vez);
                     jogo.setAnable(false);
                 }else{
                     jogador_inicia = JogoDaVelhaView.XIS;
