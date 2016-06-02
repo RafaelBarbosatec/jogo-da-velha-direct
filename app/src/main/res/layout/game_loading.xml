@@ -13,12 +13,30 @@
         android:textColor="@android:color/black"
         android:id="@+id/text_prgress" />
 
+    <LinearLayout
+        android:id="@+id/ll_listservers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerVertical="true"
+        android:visibility="gone">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/listServers"
+        android:text="Escolha um dispositivo existente"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="center_horizontal"/>
     <ListView
         android:id="@+id/listServers"
         android:layout_height="250dp"
         android:layout_width="match_parent"
-        android:layout_centerVertical="true">
+        >
     </ListView>
+
+    </LinearLayout>
 
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"

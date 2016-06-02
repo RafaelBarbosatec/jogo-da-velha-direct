@@ -27,7 +27,7 @@
             android:textColor="@android:color/white"
             android:onClick="criarGame"
             android:background="@drawable/button"
-            android:text="Criar Jogo"/>
+            android:text="@string/bt_criar"/>
         <Button
             android:id="@+id/bt_buscar"
             android:layout_width="match_parent"
@@ -38,7 +38,7 @@
             android:background="@drawable/button"
             android:layout_marginRight="50dp"
             android:onClick="buscarGame"
-            android:text="Buscar Jogo"/>
+            android:text="@string/bt_busca"/>
     </LinearLayout>
 
     <ImageButton

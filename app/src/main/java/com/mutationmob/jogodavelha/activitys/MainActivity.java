@@ -1,11 +1,21 @@
 package com.mutationmob.jogodavelha.activitys;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +33,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SalutDataCallback , View.OnClickListener, JogoDaVelhaView.JogoDaVelhaListener {
 
@@ -36,6 +48,11 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
     private boolean isHost = false;
     private SalutDevice device;
     private boolean is_reset = false;
+    private ListView listViewServers;
+    private String[] mLIstServer ;
+    private LinearLayout ll_listservers;
+    private ProgressBar progressBar;
+    private ImageView img_legenda1,img_legenda2;
 
     JogoDaVelhaView jogo;
     JsonAdapter<Jogada> jsonAdapter;
@@ -49,7 +66,18 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         //setContentView(R.layout.activity_main);
         setContentView(R.layout.game_loading);
         tv_progress =(TextView)findViewById(R.id.text_prgress);
+        progressBar = (ProgressBar)findViewById(R.id.progressBar);
+        ll_listservers = (LinearLayout)findViewById(R.id.ll_listservers);
 
+
+
+        listViewServers = (ListView)findViewById(R.id.listServers);
+        listViewServers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                dialogSelectServer(position);
+            }
+        });
       //  hostingBtn = (Button) findViewById(R.id.hosting_button);
         //discoverBtn = (Button) findViewById(R.id.discover_services);
         //send_msg = (Button) findViewById(R.id.send_msg);
@@ -97,6 +125,8 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
 
     private void initGame(){
         setContentView(R.layout.activity_main);
+        img_legenda1 = (ImageView)findViewById(R.id.img_legenda);
+        img_legenda2 = (ImageView)findViewById(R.id.img_legenda2);
         jogo = (JogoDaVelhaView) findViewById(R.id.jogoDaVelha);
         jogo.setListener(this);
         bt_reiniciar = (Button)findViewById(R.id.bt_reiniciar);
@@ -126,7 +156,11 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
 
         if (isHost) {
             tv_information.setText("Sua Vez!");
+            img_legenda1.setImageResource(R.drawable.x_mark);
+            img_legenda2.setImageResource(R.drawable.o_mark);
         }else{
+            img_legenda1.setImageResource(R.drawable.o_mark);
+            img_legenda2.setImageResource(R.drawable.x_mark);
             tv_information.setText("Espere a vez de seu oponente");
         }
 
@@ -190,9 +224,21 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
                     if(network.foundDevices.size() == 1) {
                         register(network.foundDevices.get(0));
                         Log.i(MainActivity.TAG, "Name servidor: " + network.foundDevices.get(0).serviceName);
-                    }
-                    for(int i = 0 ; i<network.foundDevices.size() ; i++){
-                        Log.i(MainActivity.TAG,"Devices Encontrados: "+network.foundDevices.get(i).deviceName);
+                    }else {
+
+                        ll_listservers.setVisibility(View.VISIBLE);
+                        tv_progress.setVisibility(View.INVISIBLE);
+                        progressBar.setVisibility(View.INVISIBLE);
+                        mLIstServer = new String[network.foundDevices.size()];
+                        for (int i = 0; i < network.foundDevices.size(); i++) {
+                            Log.i(MainActivity.TAG, "Devices Encontrados: " + network.foundDevices.get(i).deviceName);
+                            mLIstServer[i] = network.foundDevices.get(i).deviceName.toString();
+                        }
+
+                        Log.i(MainActivity.TAG, "Tamanho lista: " + mLIstServer.length+" "+mLIstServer[0]);
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainActivity.this,
+                                android.R.layout.simple_list_item_1, android.R.id.text1, mLIstServer);
+                        listViewServers.setAdapter(adapter);
                     }
                 }
             }, new SalutCallback() {
@@ -300,7 +346,14 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
     }
 
     private void register(final SalutDevice possibleHost){
+
+        ll_listservers.setVisibility(View.GONE);
+
+        progressBar.setVisibility(View.VISIBLE);
+        tv_progress.setVisibility(View.VISIBLE);
+
         tv_progress.setText("Conectando-se a "+possibleHost.deviceName);
+
         Log.d(TAG, "Iniciou registro");
         network.registerWithHost(possibleHost, new SalutCallback() {
             @Override
@@ -415,5 +468,26 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         }
 
         jogo.setAnable(false);
+    }
+
+    public void dialogSelectServer(final int position){
+        AlertDialog.Builder dialalogServers = new AlertDialog.Builder(MainActivity.this);
+        dialalogServers.setCancelable(false);
+        dialalogServers.setTitle("Atenção!");
+        dialalogServers.setMessage("Deseja-se conectar com "+network.foundDevices.get(position).deviceName+" ?");
+        dialalogServers.setPositiveButton("SIM", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                register(network.foundDevices.get(position));
+            }
+        });
+
+        dialalogServers.setNegativeButton("Não", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dialalogServers.show();
     }
 }

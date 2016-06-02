@@ -2,5 +2,9 @@
     <string name="app_name">Jogo da Velha</string>
     <string name="sua_vez">Sua vez!</string>
     <string name="oponente_vez">Aguarde seu oponente jogar!</string>
+    <string name="voce">Você</string>
+    <string name="oponente">Oponente</string>
+    <string name="bt_criar">CRIAR JOGO</string>
+    <string name="bt_busca">BUSCAR JOGO</string>
     <string name="instrucoes">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut libero arcu, fermentum a erat et, tincidunt mollis quam. Nam pulvinar nulla finibus ligula efficitur tristique. Quisque quis dui vitae metus vulputate finibus ut nec tortor. Phasellus id finibus ex, et porttitor neque. In risus nisi, aliquam nec vulputate id, dictum quis nulla. Etiam non consectetur enim, sed dignissim turpis. Donec placerat nibh molestie nibh feugiat, sed vehicula turpis tempus. Cras justo augue, vulputate vitae lectus sed, tincidunt pretium nisi. Donec sagittis est eget odio tempor hendrerit. Sed a risus eros. Nullam mauris neque, placerat a posuere et, facilisis at orci. Praesent tristique quis massa nec venenatis. Maecenas tellus libero, gravida eu purus sed, lobortis tristique ligula. Integer risus sem, maximus eget pharetra sit amet, volutpat non turpis. Sed eget ipsum ut elit congue rhoncus et sit amet dui.</string>
 </resources>
