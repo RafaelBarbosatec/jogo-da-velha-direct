@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
         jsonAdapter = moshi.adapter(Jogada.class);
 
         /*Populate the details for our awesome service. */
-        serviceData = new SalutServiceData("JogoDaVelha", 60606,
+        serviceData = new SalutServiceData("JogoDaVelha", 50489,
                 "HOST");
 
         network = new Salut(dataReceiver, serviceData, new SalutCallback() {
@@ -187,8 +187,13 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
                 @Override
                 public void call() {
                     Toast.makeText(getApplicationContext(), "Device: " + network.foundDevices.get(0).instanceName + " found.", Toast.LENGTH_SHORT).show();
-                    register(network.foundDevices.get(0));
-                    Log.i(MainActivity.TAG,"Name servidor: "+network.foundDevices.get(0).serviceName);
+                    if(network.foundDevices.size() == 1) {
+                        register(network.foundDevices.get(0));
+                        Log.i(MainActivity.TAG, "Name servidor: " + network.foundDevices.get(0).serviceName);
+                    }
+                    for(int i = 0 ; i<network.foundDevices.size() ; i++){
+                        Log.i(MainActivity.TAG,"Devices Encontrados: "+network.foundDevices.get(i).deviceName);
+                    }
                 }
             }, new SalutCallback() {
                 @Override
@@ -346,14 +351,17 @@ public class MainActivity extends AppCompatActivity implements SalutDataCallback
 
         @Override
         public void onDestroy () {
-
-
-            if (isHost)
-                network.stopNetworkService(true);
-            else
-                network.unregisterClient(true);
-
             super.onDestroy();
+
+            if (isHost) {
+                network.stopNetworkService(true);
+//                network.cancelConnecting();
+
+            }
+            else {
+                network.unregisterClient(false);
+            }
+
         }
 
 
