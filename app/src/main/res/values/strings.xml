@@ -6,5 +6,5 @@
     <string name="oponente">Oponente</string>
     <string name="bt_criar">CRIAR JOGO</string>
     <string name="bt_busca">BUSCAR JOGO</string>
-    <string name="instrucoes">Bem vindo ao Jogo da Velha! Você pode escolher entre duas opções: Criar um novo jogo ou Buscar um jogo. Para criar um jogo, simplesmente clique em "Criar jogo". Se preferir entrar em um jogo existente, clique em "Buscar jogo" e escolha um dos jogos disponíveis na lista. Boa diversão!!</string>
+    <string name="instrucoes"></string>
 </resources>

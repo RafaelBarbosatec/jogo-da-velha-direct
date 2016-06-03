@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.transition.Slide;
 import android.transition.TransitionManager;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mutationmob.jogodavelha.Animations;
@@ -58,13 +60,30 @@ public class MenuActivity extends AppCompatActivity {
     }
 
     private void dialogInstrucoes() {
+        String htmlText= "<pre>\n" +
+                "  <span style=\"font-family:comic sans ms,cursive\">Bem vindo ao Jogo da Velha! Para jogar &eacute; precisor ter dois dispositivos compat&iacute;veis com tecnologia WIFI Direct. Voc&ecirc; pode escolher entre duas op&ccedil;&otilde;es: Criar um novo jogo ou Buscar um jogo. Para criar um jogo, simplesmente clique em &quot;Criar jogo&quot; (Este ser&aacute; o Host) e o outro dispositivo deve selecionar &quot;Buscar Jogo&quot; (Este ser&aacute; o Cliente). Se preferir entrar em um jogo existente, clique em &quot;Buscar jogo&quot; e escolha um dos jogos criados por dispositiveis pr&oacute;ximo que estar&atilde;o dispon&iacute;veis numa lista caso tenha mais de um, caso contrario conectar&aacute; automaticamente com o &uacute;nico jogo existente.</span>\n" +
+                "<br/><br/>\n" +
+                "<span style=\"font-family:comic sans ms,cursive\"><strong>Boa divers&atilde;o!!!</strong></span></pre>\n" +
+                "\n" +
+                "<hr />\n" +
+                "<p><span style=\"font-family:comic sans ms,cursive\"><strong>Colaboradores /&nbsp;Desenvolvedores:</strong></span></p>\n" +
+                "\n" +
+                "\t<li>&nbsp;</li>\n" +
+                "\t<li><span style=\"font-family:comic sans ms,cursive\"><strong>Rafael Almeida Barbosa</strong></span></li><br/>\n" +
+                "\t<span style=\"font-family:comic sans ms,cursive\">(rafaelbarbosatec@gmail.com)</span><br/>\n" +
+                "\t<li>&nbsp;</li><br/>\n" +
+                "\t<li><span style=\"font-family:comic sans ms,cursive\"><strong>Naara Bispo Musse Ferreira</strong></span></li><br/>\n" +
+                "\t<span style=\"font-family:comic sans ms,cursive\"><strong>&nbsp;</strong>(naara.musse@gmail.com)</span>\n" +
+                "</ul>\n";
         Dialog dilalogHelp = new Dialog(this);
         //dialog.setCancelable(false);
         dilalogHelp.requestWindowFeature(Window.FEATURE_NO_TITLE);
         //dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dilalogHelp.setContentView(R.layout.custom_dialog_help);
         dilalogHelp.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+        TextView tv_instrucoes = (TextView)dilalogHelp.findViewById(R.id.tv_instrucoes);
 
+        tv_instrucoes.setText(Html.fromHtml(htmlText,null, null));
 
 
 
