@@ -6,7 +6,7 @@
  
  
 # Download
- <a href="https://play.google.com/store/apps/details?id=com.mutationmob.jogodavelha&hl=pt_BR"><img src="https://arena4g.com/wp-content/uploads/2015/09/dispon%C3%ADvel-na-google-play-store.png" align="left" height="auto" width="300" ></a>
+ <a href="https://play.google.com/store/apps/details?id=com.mutationmob.jogodavelha&hl=pt_BR"><img src="https://arena4g.com/wp-content/uploads/2015/09/dispon%C3%ADvel-na-google-play-store.png" align="left" height="auto" width="200" ></a>
 
  
  
